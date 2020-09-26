@@ -1,0 +1,30 @@
+{
+  "name": "express-mongo-template",
+  "version": "1.0.0",
+  "description": "A template for express-mongo backend",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js"
+  },
+  "keywords": [
+    "node",
+    "express",
+    "mongo",
+    "template"
+  ],
+  "author": "KhanShaheb34",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "helmet": "^4.1.1",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.10.6",
+    "morgan": "^1.10.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
