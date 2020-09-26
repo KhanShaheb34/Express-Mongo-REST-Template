@@ -11,9 +11,11 @@ const errorHandler = require('./middlewares/errorHandler');
 const app = express();
 
 // Middlewars
-app.use(morgan('dev'));
 app.use(helmet());
 app.use(express.json());
+if (process.env.NODE_ENV !== 'production') {
+  app.use(morgan('dev'));
+}
 
 // Testing a route
 app.get('/', (req, res) => {
