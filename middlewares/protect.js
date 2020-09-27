@@ -1,3 +1,5 @@
+'use strict';
+
 const AppError = require('../utils/appError');
 const { promisify } = require('util');
 const jwt = require('jsonwebtoken');
@@ -7,13 +9,13 @@ const UserModel = require('../models/userModel');
 const protect = catchAsync(async (req, res, next) => {
   let token;
   // Check if there's a token
-  console.log(req.cookies);
-
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
   if (!token) return next(new AppError('Please log in', 401));
 
@@ -38,6 +40,7 @@ const protect = catchAsync(async (req, res, next) => {
   next();
 });
 
+// Restrict perticuler routes
 const restrictTo = (...roles) => {
   return (req, res, next) => {
     if (!roles.includes(req.user.role)) {
@@ -48,4 +51,4 @@ const restrictTo = (...roles) => {
   next();
 };
 
-module.exports = protect;
+module.exports = { protect, restrictTo };

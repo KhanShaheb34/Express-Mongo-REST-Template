@@ -9,12 +9,16 @@ const errorHandler = require('./middlewares/errorHandler');
 const cookieParser = require('cookie-parser');
 const expressMongoSanitize = require('express-mongo-sanitize');
 const xssClean = require('xss-clean');
+const compression = require('compression');
 
 // Creating the express app
 const app = express();
 
 // Security Middleware
 app.use(helmet());
+
+// Compression Middleware
+app.use(compression());
 
 // Parsing JSON and Cookies
 app.use(express.json({ limit: '10kb' }));

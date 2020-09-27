@@ -42,6 +42,11 @@ const login = catchAsync(async (req, res, next) => {
   sendToken(user, 201, res);
 });
 
+const logout = catchAsync(async (req, res, next) => {
+  res.cookie('jwt', '', { expiresIn: 1000 });
+  res.status(200).json({ status: 'success' });
+});
+
 // Function to get user by id
 const getSingleUser = catchAsync(async (req, res, next) => {
   const user = await UserModel.findById(req.params.id);
@@ -85,4 +90,4 @@ const sendToken = (user, statusCode, res) => {
   });
 };
 
-module.exports = { signUp, getUser, getSingleUser, login };
+module.exports = { signUp, getUser, getSingleUser, login, logout };
