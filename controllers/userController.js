@@ -12,7 +12,7 @@ const getUser = catchAsync(async (req, res, next) => {
   const users = await UserModel.find();
   res.status(200).json({
     status: 'success',
-    data: { users }
+    data: { users },
   });
 });
 
@@ -22,14 +22,12 @@ const signUp = catchAsync(async (req, res, next) => {
   const newUser = new UserModel({ name, email, password });
   const user = await newUser.save();
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
+  const token = signToken(user._id);
 
   res.status(200).json({
     status: 'success',
     token,
-    data: { user }
+    data: { user },
   });
 });
 
@@ -37,20 +35,21 @@ const signUp = catchAsync(async (req, res, next) => {
 const login = catchAsync(async (req, res, next) => {
   const { email, password } = req.body;
 
-  const user = await UserModel.findOne({ email });
-  if (!user) return next(new AppError('Not registered', 401));
+  if (!email || !password) {
+    return next(new AppError('Provide valid email and password!', 400));
+  }
 
-  const match = await bcrypt.compare(password, user.password);
-  if (!match) return next(new AppError('Wrong password', 401));
+  const user = await UserModel.findOne({ email }).select('+password');
+  if (!user) return next(new AppError('Invalid email or password', 401));
 
-  const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
+  const correct = await bcrypt.compare(password, user.password);
+  if (!correct) return next(new AppError('Invalid email or password', 401));
+
+  const token = signToken(user._id);
 
   res.status(200).json({
     status: 'success',
     token,
-    data: { user }
   });
 });
 
@@ -62,8 +61,15 @@ const getSingleUser = catchAsync(async (req, res, next) => {
 
   res.status(200).json({
     status: 'success',
-    data: { user }
+    data: { user },
   });
 });
+
+// Signing a token
+const signToken = id => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
 
 module.exports = { signUp, getUser, getSingleUser, login };

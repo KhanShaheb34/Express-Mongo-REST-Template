@@ -10,7 +10,7 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
   name: {
     type: String,
-    required: [true, 'Name is required']
+    required: [true, 'Name is required'],
   },
   email: {
     type: String,
@@ -18,19 +18,22 @@ const userSchema = new Schema({
     unique: true,
     validate: {
       validator: validator.isEmail,
-      message: 'This is not a valid email'
+      message: 'This is not a valid email',
     },
-    lowercase: true
+    lowercase: true,
   },
   password: {
     type: String,
-    required: [true, 'Password is required']
-    // select: false
+    required: [true, 'Password is required'],
+    select: false,
   },
   registered_at: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
+  password_changed_at: {
+    type: Date,
+  },
 });
 
 // Encrypt the password
@@ -42,6 +45,17 @@ userSchema.pre('save', async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
+
+// Check if the user changed password after jwt timestamp
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+  if (this.password_changed_at) {
+    const timestamp = parseInt(this.password_changed_at.getTime() / 1000, 10);
+
+    return JWTTimestamp < timestamp;
+  }
+
+  return false;
+};
 
 // Creating model from a Schema
 const UserModel = mongoose.model('User', userSchema);

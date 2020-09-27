@@ -22,24 +22,28 @@ const sendErrorProd = (err, res) => {
 };
 
 // Mongoose error handlers
-const handleCastError = (err) => {
+const handleCastError = err => {
   const message = `Invalid ${err.path}: ${err.value}`;
   return new AppError(message, 400);
 };
 
-const handleDuplicateError = (err) => {
+const handleDuplicateError = err => {
   const message = `Duplicating ${Object.keys(err.keyPattern)}`;
   return new AppError(message, 400);
 };
 
-const handleValidationError = (err) => {
-  const errMessages = Object.values(err.errors).map((el) => el.message);
+const handleValidationError = err => {
+  const errMessages = Object.values(err.errors).map(el => el.message);
 
   const message = `Validation failed on ${Object.keys(err.errors).join(
-    ', '
+    ', ',
   )}. ${errMessages.join('. ')}`;
   return new AppError(message, 400);
 };
+
+// Handling JWT Errors
+const handleJWTError = err => new AppError('Invalid token', 401);
+const handleTokenExpiredError = err => new AppError('Token expired', 401);
 
 // The global error handling middleware
 // Call next(err) from any router to use this
@@ -54,6 +58,9 @@ const errorHandler = (err, req, res, next) => {
     if (error.code == 11000) error = handleDuplicateError(error);
     if (error._message && error._message.includes('validation failed'))
       error = handleValidationError(error);
+    if (error.name == 'JsonWebTokenError') error = handleJWTError(error);
+    if (error.name == 'TokenExpiredError')
+      error = handleTokenExpiredError(error);
 
     sendErrorProd(error, res);
   } else {
