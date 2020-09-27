@@ -7,6 +7,8 @@ const UserModel = require('../models/userModel');
 const protect = catchAsync(async (req, res, next) => {
   let token;
   // Check if there's a token
+  console.log(req.cookies);
+
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
@@ -35,5 +37,15 @@ const protect = catchAsync(async (req, res, next) => {
   req.user = user;
   next();
 });
+
+const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return next(new AppError('No permission', 403));
+    }
+  };
+
+  next();
+};
 
 module.exports = protect;

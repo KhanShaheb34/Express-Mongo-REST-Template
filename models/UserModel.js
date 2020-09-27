@@ -34,6 +34,11 @@ const userSchema = new Schema({
   password_changed_at: {
     type: Date,
   },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+  },
 });
 
 // Encrypt the password

@@ -22,13 +22,7 @@ const signUp = catchAsync(async (req, res, next) => {
   const newUser = new UserModel({ name, email, password });
   const user = await newUser.save();
 
-  const token = signToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token,
-    data: { user },
-  });
+  sendToken(user, 201, res);
 });
 
 // Function to login a user
@@ -45,12 +39,7 @@ const login = catchAsync(async (req, res, next) => {
   const correct = await bcrypt.compare(password, user.password);
   if (!correct) return next(new AppError('Invalid email or password', 401));
 
-  const token = signToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  sendToken(user, 201, res);
 });
 
 // Function to get user by id
@@ -69,6 +58,30 @@ const getSingleUser = catchAsync(async (req, res, next) => {
 const signToken = id => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+};
+
+// Send token to client
+const sendToken = (user, statusCode, res) => {
+  const token = signToken(user._id);
+
+  const cookieOptions = {
+    expires: new Date(
+      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000,
+    ),
+    httpOnly: true,
+  };
+  if (process.env.NODE_ENV == 'production') cookieOptions.secure = true;
+
+  res.cookie('jwt', token, cookieOptions);
+
+  user.password = undefined;
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: {
+      user,
+    },
   });
 };
 

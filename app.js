@@ -6,13 +6,26 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const router = require('./routes');
 const errorHandler = require('./middlewares/errorHandler');
+const cookieParser = require('cookie-parser');
+const expressMongoSanitize = require('express-mongo-sanitize');
+const xssClean = require('xss-clean');
 
 // Creating the express app
 const app = express();
 
-// Middlewars
+// Security Middleware
 app.use(helmet());
-app.use(express.json());
+
+// Parsing JSON and Cookies
+app.use(express.json({ limit: '10kb' }));
+app.use(cookieParser());
+
+// Sanitizing user data
+app.use(expressMongoSanitize());
+
+// Prevent XSS attacks
+app.use(xssClean());
+
 if (process.env.NODE_ENV !== 'production') {
   app.use(morgan('dev'));
 }
